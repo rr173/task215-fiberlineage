@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>古籍纸张纤维谱系比对台</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header class="hero">
+    <div>
+      <p class="eyebrow">FIBERLINEAGE / RESEARCH WORKBENCH</p>
+      <h1>古籍纸张纤维谱系比对台</h1>
+      <p>把样本检测证据、相似度和来源假设放在同一张可复核的研究桌面上。</p>
+    </div>
+    <button id="refresh" class="primary">刷新研究快照</button>
+  </header>
+
+  <main>
+    <section class="summary" id="summary">
+      <article><span>样本</span><strong id="sample-count">—</strong></article>
+      <article><span>有效证据</span><strong id="evidence-count">—</strong></article>
+      <article><span>相似度边</span><strong id="edge-count">—</strong></article>
+      <article><span>谱系假设</span><strong id="lineage-count">—</strong></article>
+    </section>
+
+    <section class="panel">
+      <div class="panel-title"><div><p class="eyebrow">EVIDENCE MATRIX</p><h2>样本相似度矩阵</h2></div><span id="updated">尚未加载</span></div>
+      <div class="table-wrap"><table id="matrix"><thead></thead><tbody></tbody></table></div>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <div class="panel-title"><div><p class="eyebrow">EVIDENCE</p><h2>最近证据</h2></div></div>
+        <div id="evidence-list" class="stack muted">加载中…</div>
+      </article>
+      <article class="panel">
+        <div class="panel-title"><div><p class="eyebrow">LINEAGE HYPOTHESES</p><h2>谱系假设</h2></div></div>
+        <div id="lineage-list" class="stack muted">加载中…</div>
+      </article>
+    </section>
+
+    <section class="panel">
+      <div class="panel-title"><div><p class="eyebrow">LINEAGE GRAPH</p><h2>来源谱系图</h2></div><span>边来自已保存的假设</span></div>
+      <div id="graph" class="graph"><span class="muted">加载中…</span></div>
+    </section>
+    <p id="error" class="error" hidden></p>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>
