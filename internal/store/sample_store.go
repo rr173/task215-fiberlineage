@@ -119,6 +119,10 @@ func (s *Store) SetDetection(sampleID int64, det *model.SampleDetection) error {
 	if det == nil || len(det.FiberSpectrum) == 0 {
 		return fmt.Errorf("%w: fiber spectrum required", model.ErrInvalidInput)
 	}
+	if !det.UnitKnown {
+		// 持久化边界兜底：未知单位的检测不可进入比对库，避免不可靠输入参与相似度计算。
+		return fmt.Errorf("%w: unknown detection unit cannot be persisted", model.ErrInvalidInput)
+	}
 	cur, err := s.GetSample(sampleID)
 	if err != nil {
 		return err

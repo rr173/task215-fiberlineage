@@ -105,7 +105,7 @@ func (s *Server) handleSubmitDetection(w http.ResponseWriter, r *http.Request) {
 		FiberSpectrum: req.FiberSpectrum,
 		DyePeaks:      req.DyePeaks,
 		RepairLayers:  req.RepairLayers,
-		UnitKnown:     true,
+		UnitKnown:     req.UnitKnown,
 	}
 	if err := s.svc.SubmitDetection(id, det); err != nil {
 		writeError(w, err)

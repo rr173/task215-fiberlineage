@@ -55,7 +55,6 @@ func (svc *Service) SubmitDetection(sampleID int64, det *model.SampleDetection) 
 		return fmt.Errorf("%w: nil detection", model.ErrInvalidInput)
 	}
 	det.SampleID = sampleID
-	det.UnitKnown = true
 	if err := spectrum.Validate(det); err != nil {
 		return err
 	}

@@ -18,7 +18,7 @@ func Validate(det *model.SampleDetection) error {
 		return fmt.Errorf("%w: nil detection", model.ErrInvalidInput)
 	}
 	if !det.UnitKnown {
-		det.UnitKnown = true
+		return fmt.Errorf("%w: unknown detection unit cannot be compared", model.ErrInvalidInput)
 	}
 	if len(det.FiberSpectrum) == 0 {
 		return fmt.Errorf("%w: fiber spectrum empty", model.ErrInvalidInput)
