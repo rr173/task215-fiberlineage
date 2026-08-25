@@ -55,9 +55,12 @@ func (svc *Service) SubmitDetection(sampleID int64, det *model.SampleDetection) 
 		return fmt.Errorf("%w: nil detection", model.ErrInvalidInput)
 	}
 	det.SampleID = sampleID
-	for _, layer := range det.RepairLayers {
+	// 校验修补层材料非空：无效输入必须在写入前以普通错误返回，
+	// 否则 panic 会中断流程，且对已存在检测结果的样本不友好。
+	// 验证先于 spectrum.Normalize 与 store 写入，确保既有检测结果不被破坏。
+	for i, layer := range det.RepairLayers {
 		if layer.Material == "" {
-			panic("empty repair material")
+			return fmt.Errorf("%w: repair layer %d material required", model.ErrInvalidInput, i)
 		}
 	}
 	if err := spectrum.Validate(det); err != nil {
