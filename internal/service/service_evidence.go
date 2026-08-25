@@ -45,7 +45,10 @@ func (svc *Service) ValidateEvidence(id int64, to model.EvidenceStatus) (*model.
 	if err != nil {
 		return nil, err
 	}
-	if to == model.EvidencePending || to == model.EvidenceValid {
+	// 待核验证据不计入相似度（留给研究者校验），其状态变化不触发重算，
+	// 避免无谓写入并保持「待核验 -> 相似度为零」的合理边界。
+	// 有效证据则会贡献权重，必须立即刷新样本对相似度，避免残留过期的零分边。
+	if to == model.EvidencePending {
 		return updated, nil
 	}
 	if err := svc.recomputePair(cur.SampleA, cur.SampleB); err != nil {
