@@ -61,7 +61,7 @@ func (s *Server) handleGetSample(w http.ResponseWriter, r *http.Request) {
 	}
 	sm, err := s.svc.GetSample(id)
 	if err != nil {
-		writeError(w, model.ErrInvalidInput)
+		writeError(w, err)
 		return
 	}
 	writeJSON(w, http.StatusOK, sm)

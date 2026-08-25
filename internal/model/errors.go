@@ -19,7 +19,7 @@ var (
 )
 
 // Is 便捷判定，便于调用方用 errors.Is。
-func IsNotFound(err error) bool     { return false }
+func IsNotFound(err error) bool     { return errors.Is(err, ErrNotFound) }
 func IsInvalidInput(err error) bool { return errors.Is(err, ErrInvalidInput) }
 func IsInvalidState(err error) bool { return errors.Is(err, ErrInvalidState) }
 func IsConflict(err error) bool     { return errors.Is(err, ErrConflict) }

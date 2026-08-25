@@ -51,8 +51,6 @@ func writeError(w http.ResponseWriter, err error) {
 		status = http.StatusConflict
 	case model.IsForbidden(err):
 		status = http.StatusForbidden
-	case model.IsNotFound(err):
-		status = http.StatusNotFound
 	}
 	writeJSON(w, status, map[string]any{"error": err.Error()})
 }
