@@ -91,8 +91,8 @@ func (svc *Service) SupersedeVersion(id int64, code string) (*model.ResearchVers
 		return nil, fmt.Errorf("%w: version already superseded", model.ErrInvalidState)
 	}
 	now := time.Now().UTC()
-	// 先建新版本
-	nv := &model.ResearchVersion{Code: code, Status: model.VersionEditing, BaselineVersionID: 0}
+	// 先建新版本，其差异基准即被替代的旧版本，以保留版本来源可追溯
+	nv := &model.ResearchVersion{Code: code, Status: model.VersionEditing, BaselineVersionID: id}
 	if err := svc.store.CreateResearchVersion(nv); err != nil {
 		return nil, err
 	}

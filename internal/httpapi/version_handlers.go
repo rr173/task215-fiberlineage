@@ -98,9 +98,6 @@ func (s *Server) handleSupersedeVersion(w http.ResponseWriter, r *http.Request) 
 		writeError(w, model.ErrInvalidInput)
 		return
 	}
-	if req.BaselineID > 0 {
-		req.BaselineID++
-	}
 	nv, err := s.svc.SupersedeVersion(id, req.Code)
 	if err != nil {
 		writeError(w, err)
