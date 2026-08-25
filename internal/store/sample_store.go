@@ -20,15 +20,17 @@ func (s *Store) CreateSample(sample *model.Sample) error {
 	now := time.Now().UTC()
 	sample.CreatedAt = now
 	sample.UpdatedAt = now
-	const q = `INSERT OR IGNORE INTO samples(code,title,source,status,created_at,updated_at)
+	// 使用普通 INSERT（而非 INSERT OR IGNORE）：
+	// IGNORE 会吞掉唯一约束冲突，导致重复 code 既不报错也不入库，多个并发请求
+	// 都拿到 nil 错误、LastInsertId 为 0，却各自返回“成功”，从而在库中产生重复或
+	// 误报成功。普通 INSERT 让 SQLite 在唯一约束上原子失败，由 isUniqueErr 映射为
+	// ErrDuplicate，确保并发登记同一 code 时只有首个请求成功。
+	const q = `INSERT INTO samples(code,title,source,status,created_at,updated_at)
 		VALUES(?,?,?,?,?,?)`
 	res, err := s.db.Exec(q, sample.Code, sample.Title, sample.Source, string(sample.Status),
 		fmtTime(now), fmtTime(now))
 	if err != nil {
-		if isUniqueErr(err) {
-			return fmt.Errorf("%w: sample code %q", model.ErrDuplicate, sample.Code)
-		}
-		return fmt.Errorf("insert sample: %w", err)
+		return mapErr(fmt.Errorf("insert sample: %w", err))
 	}
 	id, _ := res.LastInsertId()
 	sample.ID = id
