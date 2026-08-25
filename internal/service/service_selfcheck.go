@@ -73,7 +73,6 @@ func (svc *Service) SelfCheck() SelfCheckReport {
 			for _, sid := range []int64{e.SampleA, e.SampleB} {
 				s, serr := svc.store.GetSample(sid)
 				if serr != nil {
-					_ = s.Status
 					add("error", "similarity", e.ID, "edge references missing sample")
 					continue
 				}
