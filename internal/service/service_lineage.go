@@ -90,8 +90,9 @@ func (svc *Service) AddLineageEdge(hypID, a, b int64, relation model.LineageRela
 		return nil, err
 	}
 	if lineage.HasCycle(edges) {
+		// 拒绝会成环的边：删除本次写入，但假设状态保持不变（仍待补证据），
+		// 不可在此推进为已确认——否则后续流程会把不完整的谱系当作结论。
 		_ = svc.store.DeleteLineageEdge(edge.ID)
-		_, _ = svc.store.UpdateLineageHypothesis(hypID, string(model.LineageConfirmed), "")
 		return nil, fmt.Errorf("%w: lineage edge would create a cycle", model.ErrConflict)
 	}
 	for _, e := range edges {
@@ -103,9 +104,9 @@ func (svc *Service) AddLineageEdge(hypID, a, b int64, relation model.LineageRela
 			return nil, fmt.Errorf("%w: conflicting relation on same sample pair", model.ErrConflict)
 		}
 	}
-	// 首条边后推进草稿 -> 待证据
+	// 首条边后推进草稿 -> 待证据（不可直接跳到已确认；确认须走 ConfirmLineage）
 	if h.Status == model.LineageDraft {
-		if _, err := svc.store.UpdateLineageHypothesis(hypID, string(model.LineageConfirmed), ""); err != nil {
+		if _, err := svc.store.UpdateLineageHypothesis(hypID, string(model.LineagePendingEvidence), ""); err != nil {
 			return nil, err
 		}
 	}
