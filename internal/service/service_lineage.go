@@ -241,8 +241,12 @@ func (svc *Service) SetMutualExclusive(hypID int64) error {
 	return err
 }
 
-// AddCounterexample 给假设加反例。
+// AddCounterexample 给假设加反例：要求假设所属版本处于编辑中（冻结后谱系与证据只读，
+// 反例不可事后追加，以免修改已发布研究结果）。
 func (svc *Service) AddCounterexample(hypID, a, b int64, note string) (*model.Counterexample, error) {
+	if err := svc.versionEditable(hypID); err != nil {
+		return nil, err
+	}
 	c := &model.Counterexample{HypothesisID: hypID, SampleA: a, SampleB: b, Note: note}
 	if err := svc.store.AddCounterexample(c); err != nil {
 		return nil, err
