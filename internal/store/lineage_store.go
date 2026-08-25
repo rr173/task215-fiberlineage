@@ -78,7 +78,15 @@ func (s *Store) ListLineageHypotheses(versionID int64) ([]model.LineageHypothesi
 	return out, rows.Err()
 }
 
-// UpdateLineageHypothesis 更新假设状态/备注（状态机流转约束在 service 层校验）。
+// isTerminalLineage 报告该谱系假设状态是否为终态（confirmed/rejected）。
+// 终态即终局结论，不可再向 mutual_exclusive 等非终态流转，也不可回退。
+func isTerminalLineage(s model.LineageStatus) bool {
+	return s == model.LineageConfirmed || s == model.LineageRejected
+}
+
+// UpdateLineageHypothesis 更新假设状态/备注。
+// 终态保护：confirmed/rejected 是终局结论，不可再改写为其它状态（含 mutual_exclusive）；
+// 仅当目标状态与当前一致（幂等改写，且非终态之间）或本就处于同终态时允许通过。
 func (s *Store) UpdateLineageHypothesis(id int64, status, note string) (*model.LineageHypothesis, error) {
 	cur, err := s.GetLineageHypothesis(id)
 	if err != nil {
@@ -88,13 +96,15 @@ func (s *Store) UpdateLineageHypothesis(id int64, status, note string) (*model.L
 		if !model.ValidLineageStatus(status) {
 			return nil, fmt.Errorf("%w: status %q", model.ErrInvalidInput, status)
 		}
-		cur.Status = model.LineageStatus(status)
+		next := model.LineageStatus(status)
+		// 终态不可向其它状态流转：confirmed/rejected 一经确认即定局。
+		if isTerminalLineage(cur.Status) && next != cur.Status {
+			return nil, fmt.Errorf("%w: cannot transition %s hypothesis to %s", model.ErrInvalidState, cur.Status, next)
+		}
+		cur.Status = next
 	}
 	if note != "" {
 		cur.Note = note
-	}
-	if cur.Status == model.LineageConfirmed {
-		cur.Note = "mutual-exclusive"
 	}
 	cur.UpdatedAt = time.Now().UTC()
 	const q = `UPDATE lineage_hypotheses SET status=?, note=?, updated_at=? WHERE id=?`

@@ -226,11 +226,22 @@ func (svc *Service) RejectLineage(hypID int64) error {
 }
 
 // SetMutualExclusive 将假设标记为互斥（仅草稿/待证据可标记）。
+// 已确认/已否决假设为终态结论，不可再标记为互斥——互斥是并列候选，终局结论既定不可回退。
 func (svc *Service) SetMutualExclusive(hypID int64) error {
 	if err := svc.versionEditable(hypID); err != nil {
 		return err
 	}
-	_, err := svc.store.UpdateLineageHypothesis(hypID, string(model.LineageMutualExclusive), "")
+	h, err := svc.store.GetLineageHypothesis(hypID)
+	if err != nil {
+		return err
+	}
+	if h.Status == model.LineageConfirmed || h.Status == model.LineageRejected {
+		return fmt.Errorf("%w: cannot mark a %s hypothesis as mutual-exclusive", model.ErrInvalidState, h.Status)
+	}
+	if h.Status == model.LineageMutualExclusive {
+		return nil
+	}
+	_, err = svc.store.UpdateLineageHypothesis(hypID, string(model.LineageMutualExclusive), "")
 	return err
 }
 
